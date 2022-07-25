@@ -80,5 +80,8 @@
     <Image Include="res\coffeecup.bmp">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="res\bg.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

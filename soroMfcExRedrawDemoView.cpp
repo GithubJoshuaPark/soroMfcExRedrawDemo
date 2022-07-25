@@ -151,7 +151,7 @@ void CsoroMfcExRedrawDemoView::OnPaint()
 	MemDC.CreateCompatibleDC(&dc);
 	
 	CBitmap bmp, *pOldBmp = NULL;
-	bmp.LoadBitmapW(IDB_BITMAP1);
+	bmp.LoadBitmapW(IDB_BITMAP2);
 	bmp.GetBitmap(&bmpInfo); // get info of the bmp
 	
 	pOldBmp = MemDC.SelectObject(&bmp);
