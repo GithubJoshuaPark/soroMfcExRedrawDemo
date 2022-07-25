@@ -30,6 +30,7 @@ BEGIN_MESSAGE_MAP(CsoroMfcExRedrawDemoView, CView)
 	ON_WM_LBUTTONDOWN()
 	ON_WM_PAINT()
 	ON_WM_LBUTTONUP()
+	ON_WM_MOUSEMOVE()
 END_MESSAGE_MAP()
 
 // CsoroMfcExRedrawDemoView construction/destruction
@@ -39,6 +40,11 @@ CsoroMfcExRedrawDemoView::CsoroMfcExRedrawDemoView() noexcept
 	// TODO: add construction code here
 	m_BtnRect = CRect(500, 100, 700, 300);
 	m_bClicked = FALSE;
+
+	m_RectForText = CRect(0, 0, 0, 0);
+	m_startPoint = CPoint(0, 0);
+	m_endPoint = CPoint(0, 0);
+	m_isDragStart = FALSE;
 }
 
 CsoroMfcExRedrawDemoView::~CsoroMfcExRedrawDemoView()
@@ -122,6 +128,9 @@ void CsoroMfcExRedrawDemoView::OnLButtonDown(UINT nFlags, CPoint point)
 		RedrawWindow(&m_BtnRect);
 	}
 
+	m_isDragStart = TRUE;
+	m_startPoint = point;
+
 	CView::OnLButtonDown(nFlags, point);
 }
 
@@ -134,6 +143,21 @@ void CsoroMfcExRedrawDemoView::OnPaint()
 
 	CRect cRect;
 	GetClientRect(&cRect);
+
+	// CDC, CBitmap
+	CDC MemDC;
+	BITMAP bmpInfo;
+
+	MemDC.CreateCompatibleDC(&dc);
+	
+	CBitmap bmp, *pOldBmp = NULL;
+	bmp.LoadBitmapW(IDB_BITMAP1);
+	bmp.GetBitmap(&bmpInfo); // get info of the bmp
+	
+	pOldBmp = MemDC.SelectObject(&bmp);
+
+	dc.BitBlt(0, 0, bmpInfo.bmWidth, bmpInfo.bmHeight, &MemDC, 0, 0, SRCCOPY);
+	MemDC.SelectObject(pOldBmp);
 
 	CFont font, *pOldFont;
 	//font.CreatePointFont(400, _T("Tahoma"));   // 타호마 체로 폰트 설정
@@ -189,7 +213,7 @@ void CsoroMfcExRedrawDemoView::OnPaint()
 	CBrush brush, * pOldBrush;
 
 	pen.CreatePen(PS_GEOMETRIC | PS_SOLID | PS_ENDCAP_FLAT| PS_INSIDEFRAME | PS_JOIN_ROUND, 20, &lb);
-	brush.CreateSolidBrush(RGB(192,192,192));
+	brush.CreateSolidBrush(::GetSysColor(COLOR_BTNFACE));
 
 	pOldPen = dc.SelectObject(&pen);
 	pOldBrush = (CBrush*) dc.SelectStockObject(NULL_BRUSH); //Polygan 내부에 채우기를 하지 않도록 블러쉬 설정
@@ -235,9 +259,14 @@ void CsoroMfcExRedrawDemoView::OnPaint()
 
 	// Btn 처럼 보이게 그리기
 	CRect Rect(m_BtnRect);
-	Rect += CRect(10, 10, 10, 10);
-	dc.Rectangle(&Rect);
-	dc.FillSolidRect(&m_BtnRect, ::GetSysColor(COLOR_BTNFACE));
+	Rect += CRect(4, 4, 4, 4);
+	//dc.Rectangle(&Rect);
+	dc.RoundRect(&Rect, CPoint(20, 20));
+	//dc.FillSolidRect(&m_BtnRect, ::GetSysColor(COLOR_BTNFACE));
+	pOldBrush = dc.SelectObject(&brush);
+	dc.RoundRect(&m_BtnRect, CPoint(20, 20));
+	dc.SelectObject(pOldBrush);
+	
 
 	if (m_bClicked) {
 		dc.Draw3dRect(m_BtnRect,
@@ -258,6 +287,9 @@ void CsoroMfcExRedrawDemoView::OnPaint()
 	LOGFONT lf;
 	::ZeroMemory(&lf, sizeof(lf));
 	lf.lfHeight = 40;
+	lf.lfUnderline = 1;
+	lf.lfItalic = 1;
+	lf.lfWeight = 1;
 	wsprintf(lf.lfFaceName, TEXT("%s"), TEXT("Arial"));
 
 	font.CreateFontIndirect(&lf);
@@ -275,6 +307,13 @@ void CsoroMfcExRedrawDemoView::OnPaint()
 			DT_CENTER | DT_SINGLELINE | DT_VCENTER);
 	}
 
+	if (m_isDragStart) {
+		dc.Rectangle(&m_RectForText);
+	}
+
+	dc.DrawText(L"Good Neighborhood", &m_RectForText,
+		DT_CENTER | DT_SINGLELINE | DT_VCENTER);
+
 }
 
 
@@ -283,7 +322,29 @@ void CsoroMfcExRedrawDemoView::OnLButtonUp(UINT nFlags, CPoint point)
 	// TODO: Add your message handler code here and/or call default
 	if (m_bClicked) {
 		m_bClicked = !m_bClicked;
+
+		m_endPoint = point;
+		if (abs(m_endPoint.x - m_startPoint.x) > 0) {
+			m_RectForText = CRect(min(m_endPoint.x, m_startPoint.x),
+								min(m_endPoint.y, m_startPoint.y),
+								max(m_endPoint.x, m_startPoint.x),
+								max(m_endPoint.y, m_startPoint.y));
+		}
+
 		RedrawWindow(&m_BtnRect);
+	}
+
+	if (m_isDragStart) {
+		m_isDragStart = !m_isDragStart;
+		m_endPoint = point;
+		if (abs(m_endPoint.x - m_startPoint.x) > 0) {
+			m_RectForText = CRect(min(m_endPoint.x, m_startPoint.x),
+				min(m_endPoint.y, m_startPoint.y),
+				max(m_endPoint.x, m_startPoint.x),
+				max(m_endPoint.y, m_startPoint.y));
+
+			RedrawWindow(&m_RectForText);
+		}		
 	}
 
 	if (m_BtnRect.PtInRect(point)) {
@@ -291,4 +352,22 @@ void CsoroMfcExRedrawDemoView::OnLButtonUp(UINT nFlags, CPoint point)
 	}
 
 	CView::OnLButtonUp(nFlags, point);
+}
+
+
+void CsoroMfcExRedrawDemoView::OnMouseMove(UINT nFlags, CPoint point)
+{
+	// TODO: Add your message handler code here and/or call default
+	if (m_isDragStart) {
+		m_endPoint = point;
+		if (abs(m_endPoint.x - m_startPoint.x) > 0) {
+			m_RectForText = CRect(min(m_endPoint.x, m_startPoint.x),
+				min(m_endPoint.y, m_startPoint.y),
+				max(m_endPoint.x, m_startPoint.x),
+				max(m_endPoint.y, m_startPoint.y));
+			RedrawWindow();
+		}
+	}
+
+	CView::OnMouseMove(nFlags, point);
 }

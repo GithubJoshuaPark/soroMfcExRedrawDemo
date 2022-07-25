@@ -20,6 +20,11 @@ public:
 	CRect m_BtnRect;
 	BOOL m_bClicked;
 
+	CRect m_RectForText;
+	CPoint m_startPoint;
+	CPoint m_endPoint;
+	BOOL m_isDragStart;
+
 // Overrides
 public:
 	virtual void OnDraw(CDC* pDC);  // overridden to draw this view
@@ -46,6 +51,7 @@ public:
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnPaint();
 	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
+	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
 };
 
 #ifndef _DEBUG  // debug version in soroMfcExRedrawDemoView.cpp
