@@ -312,8 +312,12 @@ void CsoroMfcExRedrawDemoView::OnPaint()
 	}
 
 	dc.DrawText(L"Good Neighborhood", &m_RectForText,
+	
 		DT_CENTER | DT_SINGLELINE | DT_VCENTER);
 
+	int nTabStop = 40;
+	dc.SetBkMode(1);
+	CSize size = dc.TabbedTextOutW(10, 10, _T("\t\tT"), 1, &nTabStop, 10);
 }
 
 
