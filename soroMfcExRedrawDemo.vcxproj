@@ -208,11 +208,14 @@
     <ResourceCompile Include="soroMfcExRedrawDemo.rc" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="ClassDiagram.cd" />
     <None Include="res\soroMfcExRedrawDemo.rc2" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\bg.bmp" />
+    <Image Include="res\bitmap3.bmp" />
     <Image Include="res\coffeecup.bmp" />
+    <Image Include="res\pororo.bmp" />
     <Image Include="res\soroMfcExRedrawDemo.ico" />
     <Image Include="res\soroMfcExRedrawDemoDoc.ico" />
     <Image Include="res\Toolbar.bmp" />
